@@ -7,7 +7,7 @@ from sklearn.preprocessing import scale
 import talib
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-
+from sklearn import tree
 
 #1. data gathering & processing
 features = pd.read_csv('data/SIME.csv')
@@ -17,7 +17,7 @@ features['Date'] = pd.to_datetime(features.Date, format= '%Y-%m-%d')
 
 #2. exponential smoothing
 S = X = np.array(features['Close'])
-alpha = 0.8
+alpha = 0.9
 for i in range(1,len(S)):
     S[i] = alpha*X[i] + (1-alpha)*S[i-1]
 features['Close'] = S
@@ -26,7 +26,7 @@ features['Close'] = S
 macd, dea, bar = talib.MACD(features['Close'].values, fastperiod=12, slowperiod=26, signalperiod=9)
 fastk, fastd = talib.STOCHF(features['High'], features['Low'], features['Close'], fastk_period=14, fastd_period=3, fastd_matype=0)
 real = talib.WILLR(features['High'], features['Low'], features['Close'], timeperiod=14)
-features['dif'] = features['Close'].diff(-1)
+features['dif'] = features['Close'].diff(-30)
 features['MACD'] = macd
 features['STOCH'] = fastk
 features['WILLR'] = real
@@ -65,9 +65,21 @@ train_features, test_features, train_labels, test_labels = train_test_split(feat
 # Instantiate model 
 rf = RandomForestClassifier(n_estimators=1000)
 # Train the model on training data
-result = rf.fit(train_features, train_labels)
+rf = rf.fit(train_features, train_labels)
 # Use the forest's predict method on the test data
 predictions = rf.predict(test_features)
+
+
+
+# decision tree
+
+# clf = tree.DecisionTreeClassifier() # 引入模型
+# result = clf.fit(train_features,train_labels) # 训练模型
+# predictions = clf.predict(test_features)
+
+
+
+
 
 #8. list importance feature
 # Get numerical feature importances
